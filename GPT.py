@@ -12,8 +12,6 @@ import colorama
 # Load the .env file
 load_dotenv()
 
-colorama.init(autoreset=True)
-
 # Set API keys and model
 open_ai_api_key = os.getenv("OPENAI_API_KEY")
 browserless_api_key = os.getenv("BROWSERLESS_API_KEY")
@@ -22,6 +20,7 @@ openai_model = "gpt-3.5-turbo-16k-0613"
 openai.api_key = open_ai_api_key
 headers = {'Cache-Control': 'no-cache', 'Content-Type': 'application/json'}
 params = {'token': browserless_api_key}
+
 
 
 def scrape(link):
@@ -56,8 +55,8 @@ def summarize(question, webpage_text):
         model=openai_model,
         messages=[
             {"role": "system", "content": "You are a helpful assistant."},
-            {"role": "user", "content": prompt},
-        ]
+            {"role": "user", "content": prompt},  
+        ],temperature = 0.2
     )
 
     return response.choices[0].message.content
@@ -90,45 +89,48 @@ def link(r):
 def search_results(question):
     """Get search results for a question."""
     organic_results = []
-    for link in search(question,tld="co.in", num=7, stop=7, pause=2):
+    for link in search(question,tld="co.in", num=5, stop=5, pause=2):
         organic_results.append(link)
     return organic_results
 
 
-
 def print_citations(links, summaries):
     """Print citations for the summaries."""
-    print(colorama.Fore.BLUE + colorama.Style.BRIGHT + "CITATIONS" + colorama.Style.RESET_ALL)
+    print("CITATIONS\n")
     num_citations = min(len(links), len(summaries))
     for i in range(num_citations):
         print("\n", f"[{i + 1}] {links[i]}\n{summaries[i]}\n")
 
 def main():
-    print(colored("\nWHAT WOULD YOU LIKE ME TO SEARCH?\n", "cyan", attrs=["bold"]))
-    question = input()
-    print("\n")
-    sys.stdout = open(os.devnull, 'w')  # disable print
-    links = search_results(question)
-    sys.stdout = sys.__stdout__  # enable print
-    webpages = []
-    summaries = []
+    while True:
+        print("\nWHAT WOULD YOU LIKE ME TO SEARCH?\n")
+        question = input()
+        print("\n")
+        if question == "0":
+            print("Happy to help !")
+            break
+        #sys.stdout = open(os.devnull, 'w')  # disable print
+        links = search_results(question)
+        #sys.stdout = sys.__stdout__  # enable print
+        webpages = []
+        summaries = []
 
-    # Display progress bar
-    with tqdm(total=100, desc="Loading", ncols=100, bar_format="{l_bar}{bar}| {n_fmt}/{total_fmt} ", unit=" percent") as pbar:
-        for i in range(4):
-            pbar.update(12.5)
-            time.sleep(0.1)
-            if i < len(links):
-                webpages.append(scrape(links[i]))
-            pbar.update(12.5)
-            time.sleep(0.1)
-            if i < len(webpages):
-                summaries.append(summarize(question, webpages[i]))
+        # Display progress bar
+        with tqdm(total=100, desc="Loading", ncols=100, bar_format="{l_bar}{bar}| {n_fmt}/{total_fmt} ", unit=" percent") as pbar:
+            for i in range(4):
+                pbar.update(12.5)
+                time.sleep(0.1)
+                if i < len(links):
+                    webpages.append(scrape(links[i]))
+                pbar.update(12.5)
+                time.sleep(0.1)
+                if i < len(webpages):
+                    summaries.append(summarize(question, webpages[i]))
 
-    answer = final_summary(question, summaries)
-    print(colorama.Fore.YELLOW + colorama.Style.BRIGHT + "\n\nHERE IS THE ANSWER\n" + colorama.Style.RESET_ALL)
-    print(answer, "\n")
-    print_citations(links, summaries)
+        answer = final_summary(question, summaries)
+        print("\n\nHERE IS THE ANSWER\n")
+        print(answer, "\n")
+        print_citations(links, summaries)
 
 
 if __name__ == "__main__":
