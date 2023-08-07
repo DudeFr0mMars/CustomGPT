@@ -17,7 +17,7 @@ else:
     open_ai_api_key = secrets["OPENAI_API_KEY"]
     browserless_api_key = secrets["BROWSERLESS_API_KEY"]
 
-openai_model = "gpt-3.5-turbo-16k-0613"
+openai_model = "gpt-3.5-turbo"
 
 openai.api_key = open_ai_api_key
 headers = {'Cache-Control': 'no-cache', 'Content-Type': 'application/json'}
