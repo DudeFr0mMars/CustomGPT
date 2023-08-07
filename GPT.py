@@ -22,7 +22,6 @@ headers = {'Cache-Control': 'no-cache', 'Content-Type': 'application/json'}
 params = {'token': browserless_api_key}
 
 
-
 def scrape(link):
     """Scrape the content of a webpage."""
     json_data = {

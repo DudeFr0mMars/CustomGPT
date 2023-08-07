@@ -1,9 +1,11 @@
 import os
+import sys
 import toml
 import requests
 import openai
 import streamlit as st
 import concurrent.futures
+from googlesearch import search
 import time
 
 if not os.path.exists("secrets.toml"):
@@ -34,7 +36,9 @@ def scrape(link):
         webpage_text = response.json()['data'][0]['results'][0]['text']
         return webpage_text
     else:
+        print(f"Error: Unable to fetch content from {link}. Status code: {response.status_code}")
         return ""
+
 
 def summarize(question, webpage_text):
     """Summarize the relevant information from a body of text related to a question."""
@@ -55,7 +59,7 @@ def summarize(question, webpage_text):
                 messages=[
                     {"role": "system", "content": "You are a helpful assistant."},
                     {"role": "user", "content": prompt},
-                ]
+                ],temperature = 0.2
             )
             return response.choices[0].message.content
         except openai.error.RateLimitError:
@@ -92,7 +96,7 @@ def link(r):
 def search_results(question):
     """Get search results for a question."""
     organic_results = []
-    for link in search(question,tld="co.in", num=5, stop=5, pause=2):
+    for link in search(question,tld="co.in", num=10, stop=10, pause=2):
         organic_results.append(link)
     return organic_results
 
