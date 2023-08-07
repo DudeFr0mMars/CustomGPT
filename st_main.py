@@ -2,7 +2,6 @@ import os
 import toml
 import requests
 import openai
-from serpapi import GoogleSearch
 import streamlit as st
 import concurrent.futures
 import time
@@ -11,12 +10,10 @@ if not os.path.exists("secrets.toml"):
     # Set API keys and model
     open_ai_api_key = st.secrets.api_keys["OPENAI_API_KEY"]
     browserless_api_key = st.secrets.api_keys["BROWSERLESS_API_KEY"]
-    serpapi_api_key = st.secrets.api_keys["SERPAPI_API_KEY"]
 else:
     secrets = toml.load("secrets.toml")["api_keys"]
     open_ai_api_key = secrets["OPENAI_API_KEY"]
     browserless_api_key = secrets["BROWSERLESS_API_KEY"]
-    serpapi_api_key = secrets["SERPAPI_API_KEY"]
 
 openai_model = "gpt-3.5-turbo-16k-0613"
 
@@ -94,14 +91,10 @@ def link(r):
 @st.cache_data
 def search_results(question):
     """Get search results for a question."""
-    search = GoogleSearch({
-        "q": question,
-        "api_key": serpapi_api_key,
-        "logging": False
-    })
-
-    result = search.get_dict()
-    return list(map(link, result['organic_results']))
+    organic_results = []
+    for link in search(question,tld="co.in", num=5, stop=5, pause=2):
+        organic_results.append(link)
+    return organic_results
 
 def print_citations(links, summaries):
     """Print citations for the summaries."""
